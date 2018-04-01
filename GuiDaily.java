@@ -13,6 +13,7 @@ import java.io.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.geometry.*;
+import java.util.regex.*;
 
 public class GuiDaily extends Application{
 
@@ -20,9 +21,12 @@ public class GuiDaily extends Application{
    public static GridPane gridPane = new GridPane();
    public static ScrollPane scrollPane = new ScrollPane();
    public static HBox titleBox = new HBox(35);
-
    public static String archiveFileStringName;
+   public static Double studyDouble;
 
+   public static String studyText;
+
+   public static LinkedHashMap<String, Double> studyHashMap = new LinkedHashMap<>();;
 
    @Override
       public void start(Stage primaryStage) throws IOException{
@@ -33,7 +37,8 @@ public class GuiDaily extends Application{
 
          gridPane.setPrefSize(500,500);
          gridPane.setPadding(new Insets(40,40,40,40));
-         gridPane.setHgap(30);
+         gridPane.setHgap(20);
+         gridPane.setVgap(20);
 
          scrollPane = new ScrollPane(gridPane);
          mainPane.setCenter(scrollPane);
@@ -166,18 +171,16 @@ public class GuiDaily extends Application{
         stuff like that.) For the settled upon sections, there will be a radio
         button asking yes or no questions. */
 
-      // File[] tempList = tempDir.listFiles();
-      // for(int i = 0; i < tempList.length; i++){
-      //    }
+      //WATER.TXT 
 
-      Label waterLabel = new Label("Did you drink a gallon of water today?");
+      Label waterLabel = new Label("Did you drink a gallon of water?");
       gridPane.add(waterLabel,0,1);
 
       RadioButton noButton = new RadioButton("No");
       RadioButton yesButton = new RadioButton("Yes");
       ToggleGroup group = new ToggleGroup();
       noButton.setToggleGroup(group);
-      noButton.setSelected(true);
+      //     noButton.setSelected(true);
       yesButton.setToggleGroup(group);
       gridPane.add(noButton, 1,1);
       gridPane.add(yesButton,2,1);
@@ -200,6 +203,190 @@ public class GuiDaily extends Application{
             System.out.println("printing nowater to water.txt");
             } catch(IOException ex){}}
             });
+
+      //STUDY.TXT
+      Label studyLabel = new Label("Did you study today?");
+      gridPane.add(studyLabel, 0, 3);
+
+      RadioButton noButtonStudy = new RadioButton("No");
+      RadioButton yesButtonStudy = new RadioButton("Yes");
+      ToggleGroup groupStudy = new ToggleGroup();
+      noButtonStudy.setToggleGroup(group);
+      //   noButtonStudy.setSelected(true);
+      yesButtonStudy.setToggleGroup(group);
+      gridPane.add(noButtonStudy, 1,3);
+      gridPane.add(yesButtonStudy,2,3);
+
+      HBox studyBox = new HBox();
+
+      Label studyLabelAdd = new Label("Enter Subject");
+      gridPane.add(studyLabelAdd, 0, 4);
+      TextField studyLabelAddTF = new TextField();
+      studyLabelAddTF.setPrefWidth(175);
+      studyLabelAddTF.setDisable(true);
+      studyBox.getChildren().add(studyLabelAddTF);
+
+      ComboBox<String> cbo3 = new ComboBox<>();
+      //loop through totals file, get all string entries for study subjects
+
+      cbo3.setValue("");
+
+      cbo3.setOnAction( e ->{
+            //add entry to textField
+            System.out.println("combo box entry");
+            });
+
+      cbo3.setVisibleRowCount(5);
+      cbo3.setDisable(true);
+
+      studyBox.getChildren().add(cbo3);
+      gridPane.add(studyBox, 0, 5);
+
+      Label studyHoursAdd = new Label("# Hours");
+      TextField studyHoursAddTF = new TextField();
+      studyHoursAddTF.setDisable(true);
+      studyHoursAddTF.setPrefWidth(60);
+      gridPane.add(studyHoursAdd, 1, 4);
+      gridPane.add(studyHoursAddTF, 1, 5);
+
+      HBox addHBox = new HBox();
+
+      Button addStudy = new Button("Add");
+      addHBox.getChildren().add(addStudy);
+      gridPane.add(addHBox, 2, 5);
+      addStudy.setDisable(true);
+      studyHoursAdd.setDisable(true);
+      studyLabelAdd.setDisable(true);
+
+
+
+      yesButtonStudy.setOnAction(f ->{
+            studyHoursAddTF.setDisable(false);
+            studyLabelAddTF.setDisable(false);
+            addStudy.setDisable(false);
+            studyHoursAdd.setDisable(false);
+            studyLabelAdd.setDisable(false);
+            // cbo2.setDisable(false);
+            cbo3.setDisable(false);
+            });
+      noButtonStudy.setOnAction(f ->{
+            studyHoursAddTF.setDisable(true);
+            studyHoursAdd.setDisable(true);
+            studyLabelAdd.setDisable(true);
+            studyLabelAddTF.setDisable(true);
+            addStudy.setDisable(true);
+            //  cbo2.setDisable(true);
+            cbo3.setDisable(true);
+            studyHoursAddTF.clear();
+            studyLabelAddTF.clear();
+            });
+
+      addStudy.setOnAction(g ->{
+
+            Pattern patternCheck = Pattern.compile("\\s");
+            Matcher matcherCheck = patternCheck.matcher(studyLabelAddTF.getText());
+            int i = 0;
+            String studyText = "";
+            Double studyDouble = 0.0;
+
+            addHBox.getChildren().clear();
+            addHBox.getChildren().add(addStudy);
+
+            if((!matcherCheck.find()  && 
+                     /*  (studyLabelAddTF.getText().chars().allMatch(Character::isLetter)
+                         || studyLabelAddTF.getText().chars().allMatch(Character::isDigit)) && */
+                     (studyLabelAddTF.getText() != "") && (studyLabelAddTF.getText() != null))){
+            studyText = studyLabelAddTF.getText();
+            if(studyText != null && studyText.length() >= 1){
+            System.out.println("add " + studyText + " to hashmap");
+            }
+            i++;
+            }
+            else{
+               studyLabelAddTF.setText("Please enter valid string");
+               studyLabelAddTF.requestFocus();
+            }
+
+            try{
+               studyDouble = Double.parseDouble(studyHoursAddTF.getText());
+               i++;
+               if(i == 2){
+                  studyHoursAddTF.clear();
+                  studyLabelAddTF.clear();
+               }
+
+            }
+            catch(NumberFormatException ex){
+               try{
+                  String studyDoubleString = String.valueOf(studyHoursAddTF.getText());
+                  studyDoubleString = studyDoubleString + ".0";
+                  studyDouble = Double.parseDouble(studyDoubleString);
+                  i++;
+                  if(i == 2){
+                     studyHashMap.put(studyText, studyDouble);
+                     studyHoursAddTF.clear();
+                     studyLabelAddTF.clear();
+                  }
+
+
+               }
+               catch(NumberFormatException ex2){
+                  studyHoursAddTF.setText("invalid");
+                  studyHoursAddTF.requestFocus();
+               }
+            }
+            if(i == 2 && studyDouble!= 0.0 && (!studyText.equals(""))){
+               studyHashMap.put(studyText, studyDouble);
+            }
+            for(String key : studyHashMap.keySet()){
+               System.out.print(key + " ");
+               System.out.println(studyHashMap.get(key));
+            }
+
+            /*   for(int i = 0; i < titles.length; i++){
+                 String item = new String(titles[i]);
+                 if(!item.equals("temporary")){
+                 cbo.getItems().add(item);
+                 }
+                 } */
+            ComboBox<String> cbo2 = new ComboBox<>();
+            for(String key:studyHashMap.keySet()){
+               String first = key;
+               String second = String.valueOf(studyHashMap.get(key));
+               String entry = first + " " + second;
+               cbo2.getItems().add(entry);
+            }
+
+            cbo2.setValue("");
+            cbo2.setPrefWidth(10);
+
+            cbo2.setOnAction( e ->{
+                  String hashEntry = (cbo2.getValue());
+                  Scanner scanner = new Scanner(hashEntry);
+                  while(scanner.hasNext()){
+                  String scannerFirst = scanner.next();
+                  studyHashMap.remove(scannerFirst);
+                  if(scanner.hasNextDouble()){
+                  Double scannerSecond = scanner.nextDouble();
+                  }
+                  }
+                  scanner.close();
+                  addHBox.getChildren().remove(cbo2);
+                  addHBox.getChildren().add(cbo2);
+                  System.out.println("New studyHashMap: ");
+                  for(String key : studyHashMap.keySet()){
+                  System.out.print(key + " ");
+                  System.out.println(studyHashMap.get(key));
+                  }
+                  });
+
+            cbo2.setVisibleRowCount(5);
+            addHBox.getChildren().add(cbo2);
+            //   studyBox.getChildren().add(cbo2);
+
+            //gridPane.add(cbo2, 3,5);
+
+      });
 
 
       /*      6 tldr) loop through temporary directory files. Add radio buttons 
