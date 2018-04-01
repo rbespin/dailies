@@ -171,6 +171,8 @@ public class GuiDaily extends Application{
         stuff like that.) For the settled upon sections, there will be a radio
         button asking yes or no questions. */
 
+      //////////////////////////////////////////////////////////////////////////////
+
       //WATER.TXT 
 
       Label waterLabel = new Label("Did you drink a gallon of water?");
@@ -204,6 +206,10 @@ public class GuiDaily extends Application{
             } catch(IOException ex){}}
             });
 
+      //END OF WATER.TXT
+
+      ////////////////////////////////////////////////////////////////////////////////
+
       //STUDY.TXT
       Label studyLabel = new Label("Did you study today?");
       gridPane.add(studyLabel, 0, 3);
@@ -212,7 +218,6 @@ public class GuiDaily extends Application{
       RadioButton yesButtonStudy = new RadioButton("Yes");
       ToggleGroup groupStudy = new ToggleGroup();
       noButtonStudy.setToggleGroup(group);
-      //   noButtonStudy.setSelected(true);
       yesButtonStudy.setToggleGroup(group);
       gridPane.add(noButtonStudy, 1,3);
       gridPane.add(yesButtonStudy,2,3);
@@ -323,7 +328,7 @@ public class GuiDaily extends Application{
                   studyDouble = Double.parseDouble(studyDoubleString);
                   i++;
                   if(i == 2){
-                     studyHashMap.put(studyText, studyDouble);
+                     //   studyHashMap.put(studyText, studyDouble);
                      studyHoursAddTF.clear();
                      studyLabelAddTF.clear();
                   }
@@ -335,7 +340,8 @@ public class GuiDaily extends Application{
                   studyHoursAddTF.requestFocus();
                }
             }
-            if(i == 2 && studyDouble!= 0.0 && (!studyText.equals(""))){
+            if(i == 2 && (studyDouble!= 0.0) && (!studyText.equals("")) && 
+                  (studyText.length() >= 1) && (studyDouble!= 0)){
                studyHashMap.put(studyText, studyDouble);
             }
             for(String key : studyHashMap.keySet()){
@@ -343,12 +349,6 @@ public class GuiDaily extends Application{
                System.out.println(studyHashMap.get(key));
             }
 
-            /*   for(int i = 0; i < titles.length; i++){
-                 String item = new String(titles[i]);
-                 if(!item.equals("temporary")){
-                 cbo.getItems().add(item);
-                 }
-                 } */
             ComboBox<String> cbo2 = new ComboBox<>();
             for(String key:studyHashMap.keySet()){
                String first = key;
@@ -361,8 +361,10 @@ public class GuiDaily extends Application{
             cbo2.setPrefWidth(10);
 
             cbo2.setOnAction( e ->{
+                  try{
                   String hashEntry = (cbo2.getValue());
                   Scanner scanner = new Scanner(hashEntry);
+
                   while(scanner.hasNext()){
                   String scannerFirst = scanner.next();
                   studyHashMap.remove(scannerFirst);
@@ -371,23 +373,43 @@ public class GuiDaily extends Application{
                   }
                   }
                   scanner.close();
+
                   addHBox.getChildren().remove(cbo2);
                   addHBox.getChildren().add(cbo2);
                   System.out.println("New studyHashMap: ");
                   for(String key : studyHashMap.keySet()){
-                  System.out.print(key + " ");
-                  System.out.println(studyHashMap.get(key));
+                  System.out.print((key + " "));
+                  System.out.println((studyHashMap.get(key)));
                   }
-                  });
+                  }catch(NullPointerException ex){}
+
+            });
 
             cbo2.setVisibleRowCount(5);
             addHBox.getChildren().add(cbo2);
-            //   studyBox.getChildren().add(cbo2);
-
-            //gridPane.add(cbo2, 3,5);
 
       });
 
+      ///////////////////////////////////////////////////////////////////////////
+      //FASTFOOD.TXT
+
+
+
+
+      ///////////////////////////////////////////////////////////////////////////
+      //EXERCISE.TXT
+
+
+
+
+
+      ///////////////////////////////////////////////////////////////////////////
+      //NIGHTROUTINE.TXT
+
+
+
+
+      ///////////////////////////////////////////////////////////////////////////
 
       /*      6 tldr) loop through temporary directory files. Add radio buttons 
               as necessary, asking if the user has done whatever the radio button asks.
