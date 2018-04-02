@@ -16,6 +16,13 @@ import javafx.geometry.*;
 import java.util.regex.*;
 
 public class GuiDaily extends Application{
+   //TO-DO 
+   /* make a "totals.txt" folder, where info for each file is stored.
+    * loop through the files, find the file that matches the specific 
+    * subject, and add it to the comboBox that displays all previously
+    * entered information. Have the selection of a comboBox entry
+    * fill up the textfield.
+    */
 
    public static BorderPane mainPane = new BorderPane();
    public static GridPane gridPane = new GridPane();
@@ -26,7 +33,22 @@ public class GuiDaily extends Application{
 
    public static String studyText;
 
-   public static LinkedHashMap<String, Double> studyHashMap = new LinkedHashMap<>();;
+   public static int yesStudyText = 0;
+
+   public static LinkedHashMap<String, Double> studyHashMap = new LinkedHashMap<>();
+   //studyHashMapTotals is a temporary hashmap that stores Total's data folder entries
+   //and overwrites with added info upon submitting the initialize() day.
+   public static LinkedHashMap<String, Double> studyHashMapTotals = new LinkedHashMap<>();
+
+   public static LinkedHashMap<String, Double> foodHashMap = new LinkedHashMap<>();
+   public static LinkedHashMap<String, Double> foodHashMapTotals = new LinkedHashMap<>();
+
+   public static LinkedHashMap<String, Double> exerciseHashMap = new LinkedHashMap<>();
+   public static LinkedHashMap<String, Double> exerciseHashMapTotals = new LinkedHashMap<>();
+
+   public static LinkedHashMap<String, Double> nightHashMap = new LinkedHashMap<>();
+   public static LinkedHashMap<String, Double> nightHashMapTotals = new LinkedHashMap<>();
+
 
    @Override
       public void start(Stage primaryStage) throws IOException{
@@ -231,6 +253,7 @@ public class GuiDaily extends Application{
       studyLabelAddTF.setDisable(true);
       studyBox.getChildren().add(studyLabelAddTF);
 
+
       ComboBox<String> cbo3 = new ComboBox<>();
       //loop through totals file, get all string entries for study subjects
 
@@ -249,6 +272,7 @@ public class GuiDaily extends Application{
 
       Label studyHoursAdd = new Label("# Hours");
       TextField studyHoursAddTF = new TextField();
+
       studyHoursAddTF.setDisable(true);
       studyHoursAddTF.setPrefWidth(60);
       gridPane.add(studyHoursAdd, 1, 4);
@@ -263,7 +287,10 @@ public class GuiDaily extends Application{
       studyHoursAdd.setDisable(true);
       studyLabelAdd.setDisable(true);
 
-
+      Label removeStudyEntry = new Label("Select to\nremove entry");
+      removeStudyEntry.setWrapText(true);
+      gridPane.add(removeStudyEntry, 2,4);
+      removeStudyEntry.setVisible(false);
 
       yesButtonStudy.setOnAction(f ->{
             studyHoursAddTF.setDisable(false);
@@ -273,6 +300,12 @@ public class GuiDaily extends Application{
             studyLabelAdd.setDisable(false);
             // cbo2.setDisable(false);
             cbo3.setDisable(false);
+            // cbo3.setVisible(false);
+            if(yesStudyText > 0){
+            removeStudyEntry.setVisible(true);
+            }
+            removeStudyEntry.setDisable(false);
+            addHBox.setVisible(true);
             });
       noButtonStudy.setOnAction(f ->{
             studyHoursAddTF.setDisable(true);
@@ -284,15 +317,25 @@ public class GuiDaily extends Application{
             cbo3.setDisable(true);
             studyHoursAddTF.clear();
             studyLabelAddTF.clear();
+            removeStudyEntry.setVisible(false);
+            removeStudyEntry.setDisable(true);
+            addHBox.setVisible(false);
             });
 
       addStudy.setOnAction(g ->{
-
             Pattern patternCheck = Pattern.compile("\\s");
             Matcher matcherCheck = patternCheck.matcher(studyLabelAddTF.getText());
             int i = 0;
             String studyText = "";
             Double studyDouble = 0.0;
+
+            if((studyHoursAddTF.getText().length() == 0)  
+                  || (studyLabelAddTF.getText().length() == 0)){
+            return;
+            }
+
+            removeStudyEntry.setVisible(true);
+            yesStudyText++;
 
             addHBox.getChildren().clear();
             addHBox.getChildren().add(addStudy);
@@ -301,11 +344,11 @@ public class GuiDaily extends Application{
                      /*  (studyLabelAddTF.getText().chars().allMatch(Character::isLetter)
                          || studyLabelAddTF.getText().chars().allMatch(Character::isDigit)) && */
                      (studyLabelAddTF.getText() != "") && (studyLabelAddTF.getText() != null))){
-            studyText = studyLabelAddTF.getText();
-            if(studyText != null && studyText.length() >= 1){
-            System.out.println("add " + studyText + " to hashmap");
-            }
-            i++;
+               studyText = studyLabelAddTF.getText();
+               if(studyText != null && studyText.length() >= 1){
+                  System.out.println("add " + studyText + " to hashmap");
+               }
+               i++;
             }
             else{
                studyLabelAddTF.setText("Please enter valid string");
@@ -360,33 +403,38 @@ public class GuiDaily extends Application{
             cbo2.setValue("");
             cbo2.setPrefWidth(10);
 
-            cbo2.setOnAction( e ->{
-                  try{
-                  String hashEntry = (cbo2.getValue());
-                  Scanner scanner = new Scanner(hashEntry);
+            if(cbo2.getItems().size() > 0){
 
-                  while(scanner.hasNext()){
-                  String scannerFirst = scanner.next();
-                  studyHashMap.remove(scannerFirst);
-                  if(scanner.hasNextDouble()){
-                  Double scannerSecond = scanner.nextDouble();
-                  }
-                  }
-                  scanner.close();
+               cbo2.setOnAction( e ->{
+                     try{
+                     String hashEntry = (cbo2.getValue());
+                     Scanner scanner = new Scanner(hashEntry);
 
-                  addHBox.getChildren().remove(cbo2);
-                  addHBox.getChildren().add(cbo2);
-                  System.out.println("New studyHashMap: ");
-                  for(String key : studyHashMap.keySet()){
-                  System.out.print((key + " "));
-                  System.out.println((studyHashMap.get(key)));
-                  }
-                  }catch(NullPointerException ex){}
+                     while(scanner.hasNext()){
+                     String scannerFirst = scanner.next();
+                     studyHashMap.remove(scannerFirst);
+                     if(scanner.hasNextDouble()){
+                     Double scannerSecond = scanner.nextDouble();
+                     }
+                     }
+                     scanner.close();
 
-            });
+                     addHBox.getChildren().remove(cbo2);
+                     addHBox.getChildren().add(cbo2);
+                     System.out.println("New studyHashMap: ");
+                     //         for(String key : studyHashMap.keySet()){
+                     //          System.out.print((key + " "));
+                     //        System.out.println((studyHashMap.get(key)));
+                     //   }
+                     }catch(NullPointerException ex){}
+
+               });
+            }
 
             cbo2.setVisibleRowCount(5);
+
             addHBox.getChildren().add(cbo2);
+
 
       });
 
