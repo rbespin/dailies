@@ -1,0 +1,6 @@
+BurgerKing 55.47
+Chipotle 76.43
+Dominos 48.0
+Fins 45.22
+McDonalds 21.0
+PokeToMe 32.54

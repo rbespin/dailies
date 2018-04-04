@@ -14,6 +14,7 @@ import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.geometry.*;
 import java.util.regex.*;
+import javafx.scene.text.*;
 
 public class GuiDaily extends Application{
    //TO-DO 
@@ -27,27 +28,45 @@ public class GuiDaily extends Application{
    public static BorderPane mainPane = new BorderPane();
    public static GridPane gridPane = new GridPane();
    public static ScrollPane scrollPane = new ScrollPane();
-   public static HBox titleBox = new HBox(35);
+   public static HBox titleBox = new HBox(30);
    public static String archiveFileStringName;
    public static Double studyDouble;
 
    public static String studyText;
 
    public static int yesStudyText = 0;
+   public static int yesFoodText = 0;
+   public static int yesExerciseText = 0;
+   public static int yesNightroutineText = 0;
 
-   public static LinkedHashMap<String, Double> studyHashMap = new LinkedHashMap<>();
+   public static int u = 0;
+
+   public static String tempDate;
+
+   public static TreeMap<String, Double> studyHashMap = new TreeMap<>();
    //studyHashMapTotals is a temporary hashmap that stores Total's data folder entries
    //and overwrites with added info upon submitting the initialize() day.
-   public static LinkedHashMap<String, Double> studyHashMapTotals = new LinkedHashMap<>();
+   public static TreeMap<String, Double> studyHashMapTotals = new TreeMap<>();
+   //submitTemp is the day's hashMap to be submitted 
+   public static TreeMap<String, Double> studyHashMapSubmitTemp = new TreeMap<>();
 
-   public static LinkedHashMap<String, Double> foodHashMap = new LinkedHashMap<>();
-   public static LinkedHashMap<String, Double> foodHashMapTotals = new LinkedHashMap<>();
+   //submitTotals is the updates total's HashMap that is to overwrite the totals file
+   //these values are to be dealt with and finalized in archiveInitialize();
+   //archiveInitialize() will be called by the submit button in initialize(), and every
+   //totals will be updated to include temp's hashmaps, and then they are to overwrite totals
+   //values. In addition, a new directory will be created for that day, and the 
+   //temporary directory's contents will be written to that particular day.
+   public static TreeMap<String, Double> studyHashMapSubmitTotals = new TreeMap<>();
 
-   public static LinkedHashMap<String, Double> exerciseHashMap = new LinkedHashMap<>();
-   public static LinkedHashMap<String, Double> exerciseHashMapTotals = new LinkedHashMap<>();
 
-   public static LinkedHashMap<String, Double> nightHashMap = new LinkedHashMap<>();
-   public static LinkedHashMap<String, Double> nightHashMapTotals = new LinkedHashMap<>();
+   public static TreeMap<String, Double> foodHashMap = new TreeMap<>();
+   public static TreeMap<String, Double> foodHashMapTotals = new TreeMap<>();
+
+   public static TreeMap<String, Double> exerciseHashMap = new TreeMap<>();
+   public static TreeMap<String, Double> exerciseHashMapTotals = new TreeMap<>();
+
+   public static TreeMap<String, Double> nightHashMap = new TreeMap<>();
+   public static TreeMap<String, Double> nightHashMapTotals = new TreeMap<>();
 
 
    @Override
@@ -57,10 +76,10 @@ public class GuiDaily extends Application{
 
          initialize();
 
-         gridPane.setPrefSize(500,500);
+         gridPane.setPrefSize(500,600);
          gridPane.setPadding(new Insets(40,40,40,40));
-         gridPane.setHgap(20);
-         gridPane.setVgap(20);
+         gridPane.setHgap(5);
+         gridPane.setVgap(15);
 
          scrollPane = new ScrollPane(gridPane);
          mainPane.setCenter(scrollPane);
@@ -117,34 +136,337 @@ public class GuiDaily extends Application{
    public static void archiveInitialize(String archiveFileStringName){
       /* This method will populate the mainPane with old date information
 
-         1) set mainPane center to null
+         1) set mainPane center to null*/
+      mainPane.setCenter(null);
 
-         2) add return button to current temporary date that calls initialize()
-         for the current date written in the temporary file
+      /*      2) add return button to current temporary date that calls initialize()
+              for the current date written in the temporary file */
+      Button returnInitialize = new Button("Return");
 
-         3) using the parameter's directory name, loop through the files in 
-         the directory
 
-         4) in the loop, get .txt filename. Use a scanner to read the file.
-         The file will have information about whether to print the info or not. 
-         close the scanner before continuing to loop
-       */
+
+      /*    3) using the parameter's directory name, loop through the files in 
+            the directory */
+
+
+      /*      4) in the loop, get .txt filename. Use a scanner to read the file.
+              The file will have information about whether to print the info or not. 
+              close the scanner before continuing to loop */
+
    }
 
-   public static void archiveCurrentDay(){
-      /* navigate to temporary data directory (/data/temporary)
+   public static void archiveCurrentDay() throws IOException{
+      // navigate to temporary data directory (/data/temporary)
 
-         1) Create a directory for current date
+      //     1) Create a directory for current date
+      File dataDir = new File("data");
+      File currDir = new File(dataDir,tempDate);
+      if(!currDir.exists()){
+         currDir.mkdir();
+      }
+      File tempDir = new File(dataDir, "temporary");
+      File totalsDir = new File(dataDir, "totals");
+      File totalsWater = new File(totalsDir, "water.txt");
+      File waterTemp = new File(tempDir, "water.txt");
+      File submitWaterTemp = new File(currDir, "water.txt");
+      if(!submitWaterTemp.exists()){
+         submitWaterTemp.createNewFile();
+      }
+      Scanner scanner = new Scanner(waterTemp);
+      PrintWriter pw = new PrintWriter(new FileOutputStream(submitWaterTemp, false));
+      if(scanner.hasNext()){
+         String next = scanner.next();
+         if(next.equals("nowater")){
+            pw.print("nowater");
+            pw.close();
+            scanner.close();
+            scanner = new Scanner(totalsWater);
+            if(!scanner.hasNext()){
+               System.out.println("initializing 0..");
+               pw = new PrintWriter(new FileOutputStream(totalsWater, false));
 
-         2) loop through temporary directory files 
+               pw.println(0);
+               pw.close();
+               scanner.close();
+            }
+            else{
+               int entry = Integer.parseInt(scanner.next());
+               {
+                  int days = entry;
+                  if(!scanner.hasNext()){
+                     pw = new PrintWriter(new FileOutputStream(totalsWater, false));
+                     pw.println(0);
+                     pw.println(days);
+                     pw.close();
+                     scanner.close();
+                  }
 
-         3) write information from temporary files into correct format 
-         for the current date's directory. Create files as needed.
+                  else{
+                     int daysOld = Integer.parseInt(scanner.next());
+                     if (days>=daysOld){
+                        pw = new PrintWriter(new FileOutputStream(totalsWater, false));
+                        pw.println(0);
+                        pw.println(days);
+                        pw.close();
+                        scanner.close();
+                        System.out.println("new longest streak is: " + days);
+                     }
+                     else if(days<daysOld){
+                        pw = new PrintWriter(new FileOutputStream(totalsWater, false));
+                        pw.println(0);
+                        pw.println(daysOld);
+                        pw.close();
+                        scanner.close();
+                        System.out.println("longest streak is still: " + daysOld);
+                     }
+                  }
+               }
+            }
+         }
+         else if(next.equals("yeswater")){
+            pw.print("yeswater");
+            pw.close();
+            scanner.close();
+            scanner = new Scanner(totalsWater);
+            int day = 0;
+            int recordDay = 0;
+            if(scanner.hasNext()){
+               day = Integer.parseInt(scanner.next());
+               System.out.println("current day streak is: " + day);
+            }
+            if(scanner.hasNext()){
+               recordDay = Integer.parseInt(scanner.next());
+               System.out.println("current record streak is: " + recordDay);
+            }
 
-         4) call initialize() for new day. If it is not a new day, overwrite 
-         the date with whatever new information input
+            if(day ==  0){
+               pw = new PrintWriter(new FileOutputStream(totalsWater, false));
 
-       */
+               pw.println(1);
+               pw.println(recordDay);
+               pw.close();
+               scanner.close();
+               System.out.println("beginning new streak...");
+            }
+            else if(day>0){
+               day++;
+               System.out.println("current streak: " + day);
+               pw = new PrintWriter(new FileOutputStream(totalsWater, false));
+               if(day >= recordDay){
+                  System.out.println("new totals water.txt streak: " + day);
+
+                  pw.println(day);
+                  pw.println(day);
+               }
+               else if(day < recordDay){
+                  System.out.println("totals water.txt streak remains: " + recordDay);
+
+                  pw.println(day);
+                  pw.println(recordDay);
+               }
+               pw.close();
+               scanner.close();
+            }
+            else{
+               pw = new PrintWriter(new FileOutputStream(totalsWater, false));
+               day++;
+               pw.println(day);
+               pw.close();
+               scanner.close();
+            }
+         }
+         else{
+            pw.close();
+            scanner.close();
+         }
+      }
+
+
+      File studyTemp = new File(tempDir, "study.txt");
+      File submitStudyTemp = new File(currDir, "study.txt");
+      if(!submitStudyTemp.exists()){
+         submitStudyTemp.createNewFile();
+      }
+      pw = new PrintWriter(new FileOutputStream(submitStudyTemp, false));
+      for(String key: studyHashMap.keySet()){
+         Double keyValue = studyHashMap.get(key);
+         Double totalKeyValue = studyHashMapTotals.get(key);
+         studyHashMapTotals.put(key, keyValue+totalKeyValue);
+         pw.print(key + " ");
+         pw.println(studyHashMap.get(key));
+      }
+      pw.close();
+      scanner.close();
+      File totalsStudy = new File(totalsDir, "study.txt");
+      pw = new PrintWriter(new FileOutputStream(totalsStudy, false));
+      for(String key: studyHashMapTotals.keySet()){
+         pw.print(key + " ");
+         pw.println(studyHashMapTotals.get(key));
+      }
+      pw.close();
+
+
+      File foodTemp = new File(tempDir, "fastfood.txt");
+      File submitFoodTemp = new File(currDir, "fastfood.txt");
+      if(!submitFoodTemp.exists()){
+         submitFoodTemp.createNewFile();
+      }
+      pw = new PrintWriter(new FileOutputStream(submitFoodTemp, false));
+      for(String key:foodHashMap.keySet()){
+         Double keyValue = foodHashMap.get(key);
+         Double totalKeyValue = foodHashMapTotals.get(key);
+         foodHashMapTotals.put(key, keyValue+totalKeyValue);
+         pw.print(key + " ");
+         pw.println(foodHashMap.get(key));
+      }
+      pw.close();
+      scanner.close();
+      File totalsFood = new File(totalsDir, "fastfood.txt");
+      pw = new PrintWriter(new FileOutputStream(totalsFood, false));
+      for(String key: foodHashMapTotals.keySet()){
+         pw.print(key + " ");
+         pw.println(foodHashMapTotals.get(key));
+      }
+      pw.close();
+
+
+      File exerciseTemp = new File(tempDir, "exercise.txt");
+      File submitExerciseTemp = new File(currDir, "exercise.txt");
+      if(!submitExerciseTemp.exists()){
+         submitExerciseTemp.createNewFile();
+      }
+      pw = new PrintWriter(new FileOutputStream(submitExerciseTemp, false));
+      for(String key:exerciseHashMap.keySet()){
+         Double keyValue = exerciseHashMap.get(key);
+         Double totalKeyValue = exerciseHashMapTotals.get(key);
+         exerciseHashMapTotals.put(key, keyValue+totalKeyValue);
+         pw.print(key + " ");
+         pw.println(exerciseHashMap.get(key));
+      }
+      pw.close();
+      scanner.close();
+      File totalsExercise = new File(totalsDir, "exercise.txt");
+      pw = new PrintWriter(new FileOutputStream(totalsExercise, false));
+      for(String key: exerciseHashMapTotals.keySet()){
+         pw.print(key + " ");
+         pw.println(exerciseHashMapTotals.get(key));
+      }
+      pw.close();
+
+
+      File nightRoutineTemp = new File(tempDir, "nightroutine.txt");
+      File submitNRTemp = new File(currDir, "nightroutine.txt");
+      File totalsNR = new File(totalsDir, "nightroutine.txt");
+      scanner = new Scanner(nightRoutineTemp);
+      pw = new PrintWriter(new FileOutputStream(submitNRTemp, false));
+      if(scanner.hasNext()){
+         String next = scanner.next();
+         if(next.equals("nonightroutine")){
+            pw.print("nonightroutine");
+            pw.close();
+            scanner.close();
+            scanner = new Scanner(totalsNR);
+            if(!scanner.hasNext()){
+               System.out.println("initializing 0..");
+               pw = new PrintWriter(new FileOutputStream(totalsNR, false));
+
+               pw.println(0);
+               pw.close();
+               scanner.close();
+            }
+            else{
+               int entry = Integer.parseInt(scanner.next());
+               {
+                  int days = entry;
+                  if(!scanner.hasNext()){
+                     pw = new PrintWriter(new FileOutputStream(totalsNR, false));
+                     pw.println(0);
+                     pw.println(days);
+                     pw.close();
+                     scanner.close();
+                  }
+
+                  else{
+                     int daysOld = Integer.parseInt(scanner.next());
+                     if (days>=daysOld){
+                        pw = new PrintWriter(new FileOutputStream(totalsNR, false));
+                        pw.println(0);
+                        pw.println(days);
+                        pw.close();
+                        scanner.close();
+                        System.out.println("new longest streak is: " + days);
+                     }
+                     else if(days<daysOld){
+                        pw = new PrintWriter(new FileOutputStream(totalsNR, false));
+                        pw.println(0);
+                        pw.println(daysOld);
+                        pw.close();
+                        scanner.close();
+                        System.out.println("longest streak is still: " + daysOld);
+                     }
+                  }
+               }
+            }
+         }
+         else if(next.equals("yesnightroutine")){
+            pw.print("yesnightroutine");
+            pw.close();
+            scanner.close();
+            scanner = new Scanner(totalsNR);
+            int day = 0;
+            int recordDay = 0;
+            if(scanner.hasNext()){
+               day = Integer.parseInt(scanner.next());
+               System.out.println("current day streak is: " + day);
+            }
+            if(scanner.hasNext()){
+               recordDay = Integer.parseInt(scanner.next());
+               System.out.println("current record streak is: " + recordDay);
+            }
+
+            if(day ==  0){
+               pw = new PrintWriter(new FileOutputStream(totalsNR, false));
+
+               pw.println(1);
+               pw.println(recordDay);
+               pw.close();
+               scanner.close();
+               System.out.println("beginning new streak...");
+            }
+            else if(day>0){
+               day++;
+               System.out.println("current streak: " + day);
+               pw = new PrintWriter(new FileOutputStream(totalsNR, false));
+               if(day >= recordDay){
+                  System.out.println("new totals nightroutine.txt streak: " + day);
+
+                  pw.println(day);
+                  pw.println(day);
+               }
+               else if(day < recordDay){
+                  System.out.println("totals nightroutine.txt streak remains: " + recordDay);
+
+                  pw.println(day);
+                  pw.println(recordDay);
+               }
+               pw.close();
+               scanner.close();
+            }
+            else{
+               pw = new PrintWriter(new FileOutputStream(totalsNR, false));
+               day++;
+               pw.println(day);
+               pw.close();
+               scanner.close();
+            }
+         }
+         else{
+            pw.close();
+            scanner.close();
+         }
+      }
+      //   initialize();
+
 
    }
 
@@ -158,6 +480,7 @@ public class GuiDaily extends Application{
 
       File dataDir = new File("data");
       File tempDir = new File(dataDir, "temporary");
+      File totalsDir = new File(dataDir, "totals");
 
       File waterTemp = new File(tempDir, "water.txt");
       waterTemp.createNewFile();
@@ -179,7 +502,9 @@ public class GuiDaily extends Application{
 
       /*5) print current date at the top */
       Time today = new Time();
-      Label titleText = new Label("Today: " + today.getDate());
+      tempDate = "" + today.getMonth() + ":" + today.getDay() + ":" + today.getYear();
+      Label titleText = new Label("Today: " + tempDate);
+      System.out.println(tempDate);
       titleBox.getChildren().add(titleText);
       titleBox.setAlignment(Pos.CENTER_LEFT);
 
@@ -239,8 +564,8 @@ public class GuiDaily extends Application{
       RadioButton noButtonStudy = new RadioButton("No");
       RadioButton yesButtonStudy = new RadioButton("Yes");
       ToggleGroup groupStudy = new ToggleGroup();
-      noButtonStudy.setToggleGroup(group);
-      yesButtonStudy.setToggleGroup(group);
+      noButtonStudy.setToggleGroup(groupStudy);
+      yesButtonStudy.setToggleGroup(groupStudy);
       gridPane.add(noButtonStudy, 1,3);
       gridPane.add(yesButtonStudy,2,3);
 
@@ -254,14 +579,28 @@ public class GuiDaily extends Application{
       studyBox.getChildren().add(studyLabelAddTF);
 
 
+      File totalsStudyFile = new File(totalsDir, "study.txt");
+      Scanner studyScanner = new Scanner(totalsStudyFile);
+      if(!studyScanner.hasNext()){
+         System.out.println("study.txt in totals dir is empty");
+      }
+      while(studyScanner.hasNext()){
+         studyHashMapTotals.put(studyScanner.next(), studyScanner.nextDouble());
+      }
+      studyScanner.close();
+
       ComboBox<String> cbo3 = new ComboBox<>();
       //loop through totals file, get all string entries for study subjects
+      for(String key:studyHashMapTotals.keySet()){
+         String first = key;
+         cbo3.getItems().add(first);
+      }
 
       cbo3.setValue("");
+      cbo3.setPrefWidth(10);
 
       cbo3.setOnAction( e ->{
-            //add entry to textField
-            System.out.println("combo box entry");
+            studyLabelAddTF.setText(cbo3.getValue());
             });
 
       cbo3.setVisibleRowCount(5);
@@ -341,8 +680,8 @@ public class GuiDaily extends Application{
             addHBox.getChildren().add(addStudy);
 
             if((!matcherCheck.find()  && 
-                     /*  (studyLabelAddTF.getText().chars().allMatch(Character::isLetter)
-                         || studyLabelAddTF.getText().chars().allMatch(Character::isDigit)) && */
+                     //  (studyLabelAddTF.getText().chars().allMatch(Character::isLetter)
+                     //  || studyLabelAddTF.getText().chars().allMatch(Character::isDigit)) && 
                      (studyLabelAddTF.getText() != "") && (studyLabelAddTF.getText() != null))){
                studyText = studyLabelAddTF.getText();
                if(studyText != null && studyText.length() >= 1){
@@ -435,18 +774,439 @@ public class GuiDaily extends Application{
 
             addHBox.getChildren().add(cbo2);
 
+            for(String key: studyHashMap.keySet()){
+               studyHashMapSubmitTemp.put(key, studyHashMap.get(key));
+            }
+            System.out.println("The temp hashmap to be submitted to study.txt is: ");
+            for(String key:studyHashMap.keySet()){
+               System.out.print(key + " ");
+               System.out.println(studyHashMap.get(key));
+            }
+            System.out.println("The total hashmap is: ");
+            for(String key:studyHashMapTotals.keySet()){
+               System.out.print(key + " ");
+               System.out.println(studyHashMapTotals.get(key));
+            }
 
-      });
+      }); 
 
       ///////////////////////////////////////////////////////////////////////////
       //FASTFOOD.TXT
+      Label foodLabel = new Label("Did you eat fast food today?");
+      foodLabel.setStyle("-fx-font-weight: bold");
+      gridPane.add(foodLabel, 0, 6);
+
+      RadioButton noButtonFood = new RadioButton("No");
+      RadioButton yesButtonFood = new RadioButton("Yes");
+      ToggleGroup groupFood = new ToggleGroup();
+      noButtonFood.setToggleGroup(groupFood);
+      yesButtonFood.setToggleGroup(groupFood);
+      gridPane.add(noButtonFood, 1, 6);
+      gridPane.add(yesButtonFood, 2, 6);
+
+      HBox foodBox = new HBox();
+
+      Label foodLabelAdd = new Label("Enter Restaurant");
+      gridPane.add(foodLabelAdd, 0, 7);
+      TextField foodLabelAddTF = new TextField();
+      foodLabelAddTF.setMaxWidth(175);
+      foodLabelAddTF.setDisable(true);
+      foodBox.getChildren().add(foodLabelAddTF);
+
+      File totalsFoodFile = new File(totalsDir, "fastfood.txt");
+      Scanner foodScanner = new Scanner(totalsFoodFile);
+      if(!foodScanner.hasNext()){
+         System.out.println("fastfood.txt in totals dir is empty");
+      }
+      while(foodScanner.hasNext()){
+         foodHashMapTotals.put(foodScanner.next(), foodScanner.nextDouble());
+      }
+      foodScanner.close();
+
+      ComboBox<String> cbFood = new ComboBox<>();
+      for(String key:foodHashMapTotals.keySet()){
+         String first = key;
+         cbFood.getItems().add(first);
+      }
+      cbFood.setValue("");
+      cbFood.setMaxWidth(1);
+      cbFood.setOnAction( e->{
+            foodLabelAddTF.setText(cbFood.getValue());
+            });
+      cbFood.setVisibleRowCount(5);
+      cbFood.setDisable(true);
+      foodBox.getChildren().add(cbFood);
+      gridPane.add(foodBox, 0, 8);
+
+      Label foodCostAdd = new Label("$ Spent\n($0.00)");
+      //  Label foodCostAdd = new Label("$ Spent");
+
+      TextField foodCostAddTF = new TextField();
+
+      foodCostAddTF.setDisable(true);
+      foodCostAddTF.setMaxWidth(60);
+      gridPane.add(foodCostAdd,1,7);
+      gridPane.add(foodCostAddTF, 1, 8);
+
+      HBox addFoodHBox = new HBox();
+
+      Button addFood = new Button("Add");
+      addFoodHBox.getChildren().add(addFood);
+      gridPane.add(addFoodHBox,2,8);
+      addFood.setDisable(true);
+      foodCostAdd.setDisable(true);
+      foodLabelAdd.setDisable(true);
+
+      Label removeFoodEntry = new Label("Select to\nremove entry");
+      // Label removeFoodEntry = new Label("");
+
+      removeFoodEntry.setWrapText(true);
+      gridPane.add(removeFoodEntry, 2, 7);
+      removeFoodEntry.setVisible(false);
+
+      yesButtonFood.setOnAction(e->{
+            foodCostAddTF.setDisable(false);
+            foodLabelAddTF.setDisable(false);
+            addFood.setDisable(false);
+            foodCostAdd.setDisable(false);
+            foodLabelAdd.setDisable(false);
+            cbFood.setDisable(false);
+            if(yesFoodText > 0){
+            removeFoodEntry.setVisible(true);
+            }
+            removeFoodEntry.setVisible(false);
+            addFoodHBox.setVisible(true);
+            });
+      noButtonFood.setOnAction(e->{
+            foodCostAddTF.setDisable(true);
+            foodLabelAddTF.setDisable(true);
+            addFood.setDisable(true);
+            foodCostAdd.setDisable(true);
+            foodLabelAdd.setDisable(true);
+            cbFood.setDisable(true);
+            removeFoodEntry.setVisible(false);
+            removeFoodEntry.setDisable(true);
+            addFoodHBox.setVisible(false);
+            foodCostAddTF.clear();
+            foodLabelAddTF.clear();
+            });
+
+      addFood.setOnAction(e->{
+            Pattern patternCheck = Pattern.compile("\\s");
+            Matcher matcherCheck = patternCheck.matcher(foodLabelAddTF.getText());
+            int i = 0;
+            String foodText = "";
+            Double foodDouble = 0.0;
+
+            if((foodCostAddTF.getText().length() == 0) 
+                  || (foodLabelAddTF.getText().length() == 0)){
+            return;
+            }
+            removeFoodEntry.setVisible(true);
+            yesFoodText++;
+            addFoodHBox.getChildren().clear();
+            addFoodHBox.getChildren().add(addFood);
+
+            if((!matcherCheck.find() && (foodLabelAddTF.getText() != "")
+                     && (foodLabelAddTF.getText() != null))){
+            foodText = foodLabelAddTF.getText();
+            if(foodText != null && foodText.length() >= 1){
+            System.out.println("Add " + foodText + " to hashmap");
+            }
+            i++;
+            }
+            else{
+               foodLabelAddTF.setText("Please enter valid string");
+               foodLabelAddTF.requestFocus();
+            }
+
+            try{
+               foodDouble = Double.parseDouble(foodCostAddTF.getText());
+               i++;
+               if(i==2){
+                  foodCostAddTF.clear();
+                  foodLabelAddTF.clear();
+               }
+            }
+            catch(NumberFormatException ex){
+               try{
+                  String foodDoubleString = String.valueOf(foodCostAddTF.getText());
+                  foodDoubleString = foodDoubleString + ".00";
+                  foodDouble = Double.parseDouble(foodDoubleString);
+                  i++;
+                  if(i==2){
+                     foodCostAddTF.clear();
+                     foodLabelAddTF.clear();
+                  }
+               }
+               catch(NumberFormatException ex2){
+                  foodCostAddTF.setText("invalid");
+                  foodCostAddTF.requestFocus();
+               }
+            }
+            if(i==2 && (foodDouble!=0.0) && (!foodText.equals("")) &&
+                  (foodText.length() >= 1) && (foodDouble!= 0)){
+               foodHashMap.put(foodText, foodDouble);
+            }
+            for(String key: foodHashMap.keySet()){
+               System.out.print(key + " ");
+               System.out.println(foodHashMap.get(key));
+            }
+
+            ComboBox<String> cbFood2 = new ComboBox<>();
+            for(String key:foodHashMap.keySet()){
+               String first = key;
+               String second = String.valueOf(foodHashMap.get(key));
+               String entry = first + " " + second;
+               cbFood2.getItems().add(entry);
+            }
+
+            cbFood2.setValue("");
+            cbFood2.setMaxWidth(1);
+
+            if(cbFood2.getItems().size() > 0){
+               cbFood2.setOnAction(f->{
+                     try{
+                     String hashEntry = (cbFood2.getValue());
+                     Scanner scanner = new Scanner(hashEntry);
+                     while(scanner.hasNext()){
+                     String scannerFirst = scanner.next();
+                     foodHashMap.remove(scannerFirst);
+                     if(scanner.hasNextDouble()){
+                     Double scannerSecond = scanner.nextDouble();
+                     }
+                     }
+                     scanner.close();
+                     addFoodHBox.getChildren().remove(cbFood2);
+                     addFoodHBox.getChildren().add(cbFood2);
+                     }catch(NullPointerException ex){}
+                     });
+            }
+            cbFood2.setVisibleRowCount(5);
+            addFoodHBox.getChildren().add(cbFood2);
+
+            System.out.println("The temp hashmap to be submitted to fastfood.txt is: ");
+            for(String key:foodHashMap.keySet()){
+               System.out.print(key + " ");
+               System.out.println(foodHashMap.get(key));
+            }
+            System.out.println("the total hashmap for fastfood is: ");
+            for(String key: foodHashMapTotals.keySet()){
+               System.out.print(key + " ");
+               System.out.println(foodHashMapTotals.get(key));
+            }
+      });
+
 
 
 
 
       ///////////////////////////////////////////////////////////////////////////
       //EXERCISE.TXT
+      Label exerciseLabel = new Label("Did you exercise today?");
+      exerciseLabel.setStyle("-fx-font-weight: bold");
+      gridPane.add(exerciseLabel, 0, 9);
 
+      RadioButton noButtonExercise = new RadioButton("No");
+      RadioButton yesButtonExercise = new RadioButton("Yes");
+      ToggleGroup groupExercise = new ToggleGroup();
+      noButtonExercise.setToggleGroup(groupExercise);
+      yesButtonExercise.setToggleGroup(groupExercise);
+      gridPane.add(noButtonExercise, 1, 9);
+      gridPane.add(yesButtonExercise, 2, 9);
+
+      HBox exerciseBox = new HBox();
+
+      Label exerciseLabelAdd = new Label("Enter Exercise");
+      gridPane.add(exerciseLabelAdd, 0, 10);
+      TextField exerciseLabelAddTF = new TextField();
+      exerciseLabelAddTF.setMaxWidth(175);
+      exerciseLabelAddTF.setDisable(true);
+      exerciseBox.getChildren().add(exerciseLabelAddTF);
+
+      File totalsExerciseFile = new File(totalsDir, "exercise.txt");
+      Scanner exerciseScanner = new Scanner(totalsExerciseFile);
+      if(!exerciseScanner.hasNext()){
+         System.out.println("exercise.txt in totals dir is empty");
+      }
+      while(exerciseScanner.hasNext()){
+         exerciseHashMapTotals.put(exerciseScanner.next(), exerciseScanner.nextDouble());
+      }
+      exerciseScanner.close();
+
+      ComboBox<String> cbExercise = new ComboBox<>();
+      for(String key:exerciseHashMapTotals.keySet()){
+         String first = key;
+         cbExercise.getItems().add(first);
+      }
+      cbExercise.setValue("");
+      cbExercise.setPrefWidth(10);
+      cbExercise.setOnAction( e->{
+            exerciseLabelAddTF.setText(cbExercise.getValue());
+            });
+      cbExercise.setVisibleRowCount(5);
+      cbExercise.setDisable(true);
+      exerciseBox.getChildren().add(cbExercise);
+      gridPane.add(exerciseBox, 0, 11);
+
+      Label exerciseHoursAdd = new Label("#Hrs/\n#Miles");
+      TextField exerciseHoursAddTF = new TextField();
+
+      exerciseHoursAddTF.setDisable(true);
+      exerciseHoursAddTF.setMaxWidth(60);
+      gridPane.add(exerciseHoursAdd,1,10);
+      gridPane.add(exerciseHoursAddTF, 1, 11);
+
+      HBox addExerciseHBox = new HBox();
+
+      Button addExercise = new Button("Add");
+      addExerciseHBox.getChildren().add(addExercise);
+      gridPane.add(addExerciseHBox,2,11);
+      addExercise.setDisable(true);
+      exerciseHoursAdd.setDisable(true);
+      exerciseLabelAdd.setDisable(true);
+
+      Label removeExerciseEntry = new Label("Select to\nremove entry");
+      //  Label removeExerciseEntry = new Label("");
+
+
+      //  removeExerciseEntry.setMaxWidth(30);
+      removeExerciseEntry.setWrapText(true);
+      gridPane.add(removeExerciseEntry, 2, 10);
+      removeExerciseEntry.setVisible(false);
+
+      yesButtonExercise.setOnAction(e->{
+            exerciseHoursAddTF.setDisable(false);
+            exerciseLabelAddTF.setDisable(false);
+            addExercise.setDisable(false);
+            exerciseHoursAdd.setDisable(false);
+            exerciseLabelAdd.setDisable(false);
+            cbExercise.setDisable(false);
+            if(yesExerciseText > 0){
+            removeExerciseEntry.setVisible(true);
+            }
+            removeExerciseEntry.setVisible(false);
+            addExerciseHBox.setVisible(true);
+            });
+      noButtonExercise.setOnAction(e->{
+            exerciseHoursAddTF.setDisable(true);
+            exerciseLabelAddTF.setDisable(true);
+            addExercise.setDisable(true);
+            exerciseHoursAdd.setDisable(true);
+            exerciseLabelAdd.setDisable(true);
+            cbExercise.setDisable(true);
+            removeExerciseEntry.setVisible(false);
+            removeExerciseEntry.setDisable(true);
+            addExerciseHBox.setVisible(false);
+            exerciseHoursAddTF.clear();
+            exerciseLabelAddTF.clear();
+            });
+
+      addExercise.setOnAction(e->{
+            Pattern patternCheck = Pattern.compile("\\s");
+            Matcher matcherCheck = patternCheck.matcher(exerciseLabelAddTF.getText());
+            int i = 0;
+            String exerciseText = "";
+            Double exerciseDouble = 0.0;
+
+            if((exerciseHoursAddTF.getText().length() == 0) 
+                  || (exerciseLabelAddTF.getText().length() == 0)){
+            return;
+            }
+            removeExerciseEntry.setVisible(true);
+            yesExerciseText++;
+            addExerciseHBox.getChildren().clear();
+            addExerciseHBox.getChildren().add(addExercise);
+
+            if((!matcherCheck.find() && (exerciseLabelAddTF.getText() != "")
+                     && (exerciseLabelAddTF.getText() != null))){
+            exerciseText = exerciseLabelAddTF.getText();
+            if(exerciseText != null && exerciseText.length() >= 1){
+            System.out.println("Add " + exerciseText + " to hashmap");
+            }
+            i++;
+            }
+            else{
+               exerciseLabelAddTF.setText("Please enter valid string");
+               exerciseLabelAddTF.requestFocus();
+            }
+
+            try{
+               exerciseDouble = Double.parseDouble(exerciseHoursAddTF.getText());
+               i++;
+               if(i==2){
+                  exerciseHoursAddTF.clear();
+                  exerciseLabelAddTF.clear();
+               }
+            }
+            catch(NumberFormatException ex){
+               try{
+                  String exerciseDoubleString = String.valueOf(exerciseHoursAddTF.getText());
+                  exerciseDoubleString = exerciseDoubleString + ".00";
+                  exerciseDouble = Double.parseDouble(exerciseDoubleString);
+                  i++;
+                  if(i==2){
+                     exerciseHoursAddTF.clear();
+                     exerciseLabelAddTF.clear();
+                  }
+               }
+               catch(NumberFormatException ex2){
+                  exerciseHoursAddTF.setText("invalid");
+                  exerciseHoursAddTF.requestFocus();
+               }
+            }
+            if(i==2 && (exerciseDouble!=0.0) && (!exerciseText.equals("")) &&
+                  (exerciseText.length() >= 1) && (exerciseDouble!= 0)){
+               exerciseHashMap.put(exerciseText, exerciseDouble);
+            }
+            for(String key: exerciseHashMap.keySet()){
+               System.out.print(key + " ");
+               System.out.println(exerciseHashMap.get(key));
+            }
+
+            ComboBox<String> cbExercise2 = new ComboBox<>();
+            for(String key:exerciseHashMap.keySet()){
+               String first = key;
+               String second = String.valueOf(exerciseHashMap.get(key));
+               String entry = first + " " + second;
+               cbExercise2.getItems().add(entry);
+            }
+
+            cbExercise2.setValue("");
+            cbExercise2.setPrefWidth(10);
+
+            if(cbExercise2.getItems().size() > 0){
+               cbExercise2.setOnAction(f->{
+                     try{
+                     String hashEntry = (cbExercise2.getValue());
+                     Scanner scanner = new Scanner(hashEntry);
+                     while(scanner.hasNext()){
+                     String scannerFirst = scanner.next();
+                     exerciseHashMap.remove(scannerFirst);
+                     if(scanner.hasNextDouble()){
+                     Double scannerSecond = scanner.nextDouble();
+                     }
+                     }
+                     scanner.close();
+                     addExerciseHBox.getChildren().remove(cbExercise2);
+                     addExerciseHBox.getChildren().add(cbExercise2);
+                     }catch(NullPointerException ex){}
+                     });
+            }
+            cbExercise2.setVisibleRowCount(5);
+            addExerciseHBox.getChildren().add(cbExercise2);
+
+            System.out.println("The temp hashmap to be submitted to exercise.txt is: ");
+            for(String key:exerciseHashMap.keySet()){
+               System.out.print(key + " ");
+               System.out.println(exerciseHashMap.get(key));
+            }
+            System.out.println("the total hashmap for exercise is: ");
+            for(String key: exerciseHashMapTotals.keySet()){
+               System.out.print(key + " ");
+               System.out.println(exerciseHashMapTotals.get(key));
+            }
+      }); 
 
 
 
@@ -454,7 +1214,72 @@ public class GuiDaily extends Application{
       ///////////////////////////////////////////////////////////////////////////
       //NIGHTROUTINE.TXT
 
+      Label nightRoutineLabel = new Label("Did you brush,floss, and wash your face?");
+      gridPane.add(nightRoutineLabel,0,12);
 
+      RadioButton noButtonNR = new RadioButton("No");
+      RadioButton yesButtonNR = new RadioButton("Yes");
+      ToggleGroup groupNR = new ToggleGroup();
+      noButtonNR.setToggleGroup(groupNR);
+      //     noButton.setSelected(true);
+      yesButtonNR.setToggleGroup(groupNR);
+      gridPane.add(noButtonNR, 1,12);
+      gridPane.add(yesButtonNR,2,12);
+
+      yesButtonNR.setOnAction(e ->{
+            if(yesButtonNR.isSelected()){
+            try{
+            PrintWriter pw = new PrintWriter(new FileOutputStream(nightRoutineTemp, false));
+            pw.print("yesnightroutine");
+            pw.close();
+            System.out.println("printing yesnightroutine to nightroutine.txt");
+            } catch(IOException ex){}}
+            });
+      noButtonNR.setOnAction(f ->{
+            if(noButtonNR.isSelected()){
+            try{
+            PrintWriter pw2 = new PrintWriter(new FileOutputStream(nightRoutineTemp, false));
+            pw2.print("nonightroutine");
+            pw2.close();
+            System.out.println("printing nonightroutine to nightroutine.txt");
+            } catch(IOException ex){}}
+            });
+
+
+
+
+      ///////////////////////////////////////////////////////////////////////////
+      //SUBMIT BUTTON
+      Button submitButtonPreConfirm = new Button("Submit Day");
+      gridPane.add(submitButtonPreConfirm, 2, 14);
+      //  int u = 0;
+
+      submitButtonPreConfirm.setOnAction(e->{
+
+            if(group.getSelectedToggle()!=null && groupStudy.getSelectedToggle()!=null 
+                  && groupFood.getSelectedToggle()!=null && 
+                  groupExercise.getSelectedToggle()!=null
+                  && groupNR.getSelectedToggle()!=null && u==0){
+
+            gridPane.getChildren().remove(submitButtonPreConfirm);
+            Button submitButton = new Button("Are you\nsure?");
+            gridPane.add(submitButton, 2, 14);
+            submitButton.setOnAction(f->{
+                  try{
+
+                  if(group.getSelectedToggle()!=null && groupStudy.getSelectedToggle()!=null 
+                        && groupFood.getSelectedToggle()!=null && 
+                        groupExercise.getSelectedToggle()!=null
+                        && groupNR.getSelectedToggle()!=null && u==0){
+                  submitButton.setDisable(false);
+                  System.out.println("archiveCurrentDay();");
+                  u++;
+                  archiveCurrentDay();
+                  }
+                  }
+                  catch(IOException ex){}});
+            }
+      });
 
 
       ///////////////////////////////////////////////////////////////////////////
