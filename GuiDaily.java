@@ -97,18 +97,16 @@ public class GuiDaily extends Application{
 
       //in place of titles, loop through data directory and get names 
       //of every folder that has a date
-      String[] titles = {"temporary", "3/30/18", "3/29/18", "3/28/18", "3/27/18", 
-         "3/29/18", "3/28/18", "3/27/18", "3/29/18", "3/28/18", "3/27/18",
-         "3/29/18", "3/28/18", "3/27/18", "3/29/18", "3/28/18", "3/27/18",
-         "3/29/18", "3/28/18", "3/27/18", "3/29/18", "3/28/18", "3/27/18",
-         "3/29/18", "3/28/18", "3/27/18", "3/29/18", "3/28/18", "3/27/18",
-         "3/29/18", "3/28/18", "3/27/18", "3/29/18", "3/28/18", "3/27/18", 
-         "3/29/18", "3/28/18", "3/27/18"};
+
+      File dataDir = new File("data");
+      File[] dataDirFiles = dataDir.listFiles();
+
 
       ComboBox<String> cbo = new ComboBox<>();
-      for(int i = 0; i < titles.length; i++){
-         String item = new String(titles[i]);
-         if(!item.equals("temporary")){
+      for(int i = 0; i < dataDirFiles.length; i++){
+         String item = dataDirFiles[i].getName();
+         if(!item.equals("temporary") && !item.equals(".DS_Store")
+               && !item.equals("totals")){
             cbo.getItems().add(item);
          }
       }
@@ -290,8 +288,13 @@ public class GuiDaily extends Application{
       pw = new PrintWriter(new FileOutputStream(submitStudyTemp, false));
       for(String key: studyHashMap.keySet()){
          Double keyValue = studyHashMap.get(key);
-         Double totalKeyValue = studyHashMapTotals.get(key);
-         studyHashMapTotals.put(key, keyValue+totalKeyValue);
+         if(studyHashMapTotals.containsKey(key)){
+            Double totalKeyValue = studyHashMapTotals.get(key);
+            studyHashMapTotals.put(key, keyValue+totalKeyValue);
+         }
+         else{
+            studyHashMapTotals.put(key, keyValue);
+         }
          pw.print(key + " ");
          pw.println(studyHashMap.get(key));
       }
@@ -314,8 +317,13 @@ public class GuiDaily extends Application{
       pw = new PrintWriter(new FileOutputStream(submitFoodTemp, false));
       for(String key:foodHashMap.keySet()){
          Double keyValue = foodHashMap.get(key);
-         Double totalKeyValue = foodHashMapTotals.get(key);
-         foodHashMapTotals.put(key, keyValue+totalKeyValue);
+         if(foodHashMapTotals.containsKey(key)){
+            Double totalKeyValue = foodHashMapTotals.get(key);
+            foodHashMapTotals.put(key, keyValue+totalKeyValue);
+         }
+         else{
+            foodHashMapTotals.put(key, keyValue);
+         }
          pw.print(key + " ");
          pw.println(foodHashMap.get(key));
       }
@@ -338,8 +346,13 @@ public class GuiDaily extends Application{
       pw = new PrintWriter(new FileOutputStream(submitExerciseTemp, false));
       for(String key:exerciseHashMap.keySet()){
          Double keyValue = exerciseHashMap.get(key);
-         Double totalKeyValue = exerciseHashMapTotals.get(key);
-         exerciseHashMapTotals.put(key, keyValue+totalKeyValue);
+         if(exerciseHashMapTotals.containsKey(key)){
+            Double totalKeyValue = exerciseHashMapTotals.get(key);
+            exerciseHashMapTotals.put(key, keyValue+totalKeyValue);
+         }
+         else{
+            exerciseHashMapTotals.put(key, keyValue);
+         }
          pw.print(key + " ");
          pw.println(exerciseHashMap.get(key));
       }
@@ -1049,7 +1062,7 @@ public class GuiDaily extends Application{
       exerciseBox.getChildren().add(cbExercise);
       gridPane.add(exerciseBox, 0, 11);
 
-      Label exerciseHoursAdd = new Label("#Hrs/\n#Miles");
+      Label exerciseHoursAdd = new Label("#Mins/\n#Miles");
       TextField exerciseHoursAddTF = new TextField();
 
       exerciseHoursAddTF.setDisable(true);
